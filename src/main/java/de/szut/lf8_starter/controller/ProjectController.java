@@ -12,6 +12,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,6 +50,15 @@ public class ProjectController {
   @GetMapping
   public ResponseEntity<List<GetProjectDto>> getAllProjects() {
     return ResponseEntity.status(HttpStatus.OK).body(projectService.getAllProjects());
+  }
+
+  @Operation(summary = "Gibt ein einzelnes Projekt zurück")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Ein einzelnes Projekt")
+  })
+  @GetMapping(value = "/{id}")
+  public ResponseEntity<GetProjectDto> getProjectById(@PathVariable long id) {
+    return ResponseEntity.status(HttpStatus.OK).body(projectService.getProjectById(id));
   }
 
 }

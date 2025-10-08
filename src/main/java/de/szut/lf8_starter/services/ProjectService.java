@@ -3,9 +3,12 @@ package de.szut.lf8_starter.services;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
+import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.repositories.ProjectRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -22,6 +25,15 @@ public class ProjectService {
     Project savedProject = projectRepository.save(project);
     log.info("Created project {}", savedProject.getBezeichnung());
     return mapToDto(savedProject);
+  }
+
+  public void delete(long id) {
+    Optional<Project> optionalProject = projectRepository.findById(id);
+
+    if(optionalProject.isEmpty()){
+      throw new ResourceNotFoundException("Project by id = " + id +  " was not found.");
+    }
+    projectRepository.deleteById(id);
   }
 
   private Project mapToEntity(CreateProjectDto dto) {

@@ -1,5 +1,6 @@
 package de.szut.lf8_starter.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
+@Slf4j
 public class EmployeeServiceClient {
 
   private final RestTemplate restTemplate;
@@ -35,6 +37,7 @@ public class EmployeeServiceClient {
 
       return response.getStatusCode().is2xxSuccessful();
     } catch (HttpClientErrorException.NotFound e) {
+      log.error("Could not find employee with id {}", employeeId);
       return false;
     } catch (Exception e) {
       throw new RuntimeException("Fehler beim Überprüfen des Mitarbeiters: " + e.getMessage());

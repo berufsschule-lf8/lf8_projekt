@@ -4,9 +4,11 @@ import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ProjectService {
 
   private final ProjectRepository projectRepository;
@@ -18,6 +20,7 @@ public class ProjectService {
   public GetProjectDto createProject(CreateProjectDto createProjectDto) {
     Project project = mapToEntity(createProjectDto);
     Project savedProject = projectRepository.save(project);
+    log.info("Created project {}", savedProject.getBezeichnung());
     return mapToDto(savedProject);
   }
 

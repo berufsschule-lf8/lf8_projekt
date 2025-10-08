@@ -44,6 +44,11 @@ public class ProjectController {
     return new ResponseEntity<>(createProject, HttpStatus.CREATED);
   }
 
+  @Operation(summary = "Löschen von einem Projekt")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Projekt wurde ohne Fehler gelöscht"),
+          @ApiResponse(responseCode = "404", description = "Projekt wurde nicht gefunden")
+  })
   @DeleteMapping("/{id}")
   @ResponseStatus(code=HttpStatus.NO_CONTENT)
   public void deleteProjectById(@PathVariable final Long id){

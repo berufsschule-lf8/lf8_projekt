@@ -7,7 +7,11 @@ import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
 import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
+import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +63,30 @@ public class ProjectService {
       projectEmployeeRepository.save(projectEmployee);
       log.info("Added employee {} to project {}", employeeId, projectId);
       return mapToDto(projectOptional.get());
+  }
 
+  public void delete(long id) {
+    Optional<Project> optionalProject = projectRepository.findById(id);
+
+    if (optionalProject.isEmpty()) {
+      throw new ResourceNotFoundException("Project by id = " + id + " was not found.");
+    }
+    projectRepository.deleteById(id);
+  }
+
+  public List<GetProjectDto> getAllProjects() {
+    return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+  }
+
+  public GetProjectDto getProjectById(Long id) {
+    Optional<Project> project = projectRepository.findById(id);
+    if (project.isPresent()) {
+      log.info("Found project {}", project.get().getBezeichnung());
+      return mapToDto(project.get());
+    } else {
+      log.error("Project not found with id {}", id);
+      throw new ResourceNotFoundException("There is no project with id: " + id);
+    }
   }
 
   private Project mapToEntity(CreateProjectDto dto) {

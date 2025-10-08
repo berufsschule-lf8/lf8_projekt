@@ -4,6 +4,8 @@ import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,10 @@ public class ProjectService {
     Project savedProject = projectRepository.save(project);
     log.info("Created project {}", savedProject.getBezeichnung());
     return mapToDto(savedProject);
+  }
+
+  public List<GetProjectDto> getAllProjects() {
+    return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
   }
 
   private Project mapToEntity(CreateProjectDto dto) {

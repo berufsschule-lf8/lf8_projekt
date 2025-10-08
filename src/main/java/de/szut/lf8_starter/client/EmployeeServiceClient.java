@@ -1,5 +1,6 @@
 package de.szut.lf8_starter.client;
 
+import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -42,6 +43,24 @@ public class EmployeeServiceClient {
     } catch (Exception e) {
       throw new RuntimeException("Fehler beim Überprüfen des Mitarbeiters: " + e.getMessage());
     }
+  }
+
+  public GetEmployeeDto getEmployeeById(Long employeeId) {
+      try {
+          String url = employeeServiceUrl + "/employees/" + employeeId;
+          HttpHeaders headers = new HttpHeaders();
+          headers.setBearerAuth(authService.getBearerToken());
+
+          HttpEntity<String> entity = new HttpEntity<>(headers);
+          ResponseEntity<GetEmployeeDto> response = restTemplate.exchange(url, HttpMethod.GET, entity, GetEmployeeDto.class);
+
+          return response.getBody();
+      } catch(HttpClientErrorException.NotFound e) {
+          log.error("Could not find employee with id {}", employeeId);
+          return null;
+      } catch (Exception e) {
+          throw new RuntimeException("Fehler beim Überprüfen des Mitarbeiters: " + e.getMessage());
+      }
   }
 
 }

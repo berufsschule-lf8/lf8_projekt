@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +45,18 @@ public class ProjectController {
     return new ResponseEntity<>(createProject, HttpStatus.CREATED);
   }
 
+
+    @Operation(summary = "Fügt einen Mitarbeiter anhand der ID zu einem bestimmten Projekt hinzu.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Mitarbeiter wurde erfolgreich dem Projekt hinzugefügt."),
+            @ApiResponse(responseCode = "400", description = "Ungültige Eingabedaten!")
+    })
+  @PostMapping("/{projectId}/employees/{employeeId}")
+  public ResponseEntity<GetProjectDto> addEmployeeToProject(@PathVariable Long projectId, @PathVariable Long employeeId) {
+      GetProjectDto updatedProject = projectService.addEmployeeToProject(projectId, employeeId);
+      return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+  }
+  
   @DeleteMapping("/{id}")
   @ResponseStatus(code=HttpStatus.NO_CONTENT)
   public void deleteProjectById(@PathVariable final Long id){

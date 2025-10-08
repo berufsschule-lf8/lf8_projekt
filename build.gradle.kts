@@ -38,6 +38,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:testcontainers:1.20.0")
     testImplementation("org.testcontainers:postgresql:1.20.0")
+    runtimeOnly("com.h2database:h2")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 tasks.withType<Test> {

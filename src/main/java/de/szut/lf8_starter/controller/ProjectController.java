@@ -42,6 +42,11 @@ public class ProjectController {
     return new ResponseEntity<>(createProject, HttpStatus.CREATED);
   }
 
+  @DeleteMapping("/{id}")
+  @ResponseStatus(code=HttpStatus.NO_CONTENT)
+  public void deleteProjectById(@PathVariable final Long id){
+    this.projectService.delete(id);
+  }
 
   @Operation(summary = "Gibt alle Projekte zurück")
   @ApiResponses(value = {

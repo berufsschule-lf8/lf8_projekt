@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 public class ProjectService {
@@ -28,6 +30,13 @@ public class ProjectService {
     return mapToDto(savedProject);
   }
 
+  public void delete(long id) {
+    Optional<Project> optionalProject = projectRepository.findById(id);
+
+    if(optionalProject.isEmpty()){
+      throw new ResourceNotFoundException("Project by id = " + id +  " was not found.");
+    }
+    projectRepository.deleteById(id);
   public List<GetProjectDto> getAllProjects() {
     return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
   }

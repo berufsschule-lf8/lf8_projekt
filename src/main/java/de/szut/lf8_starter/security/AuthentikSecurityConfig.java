@@ -22,7 +22,7 @@ import java.util.List;
 @ConditionalOnProperty(value = "authentik.enabled", matchIfMissing = true)
 public class AuthentikSecurityConfig {
 
-    @Value("${authentik.jwk-set-uri}")
+    @Value("${keycloak.jwk-set-uri}")
     private String jwkSetUri;
 
     @Bean

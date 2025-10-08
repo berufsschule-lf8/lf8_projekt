@@ -33,10 +33,12 @@ public class ProjectService {
   public void delete(long id) {
     Optional<Project> optionalProject = projectRepository.findById(id);
 
-    if(optionalProject.isEmpty()){
-      throw new ResourceNotFoundException("Project by id = " + id +  " was not found.");
+    if (optionalProject.isEmpty()) {
+      throw new ResourceNotFoundException("Project by id = " + id + " was not found.");
     }
     projectRepository.deleteById(id);
+  }
+
   public List<GetProjectDto> getAllProjects() {
     return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
   }

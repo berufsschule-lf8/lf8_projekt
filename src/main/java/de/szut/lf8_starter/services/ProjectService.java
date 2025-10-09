@@ -104,7 +104,8 @@ public class ProjectService {
         project.setStartdatum(updateProject.getStartdatum());
         project.setGeplantesEnddatum(updateProject.getGeplantesEnddatum());
 
-        Project updatedProject = projectRepository.save(project);
+        projectRepository.save(project);
+        log.info("Project was updated in repository");
         return mapToDto(project);
     }
 

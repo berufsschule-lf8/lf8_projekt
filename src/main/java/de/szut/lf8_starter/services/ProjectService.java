@@ -89,6 +89,25 @@ public class ProjectService {
     }
   }
 
+    public GetProjectDto update(Long id, CreateProjectDto updateProject) {
+
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Project by id = " + id + " was not found and therefore could not be updated."
+                ));
+
+        project.setBezeichnung(updateProject.getBezeichnung());
+        project.setVerantwortlicherMitarbeiterId(updateProject.getVerantwortlicherMitarbeiterId());
+        project.setKundenId(updateProject.getKundenId());
+        project.setKundenansprechpartner(updateProject.getKundenansprechpartner());
+        project.setKommentar(updateProject.getKommentar());
+        project.setStartdatum(updateProject.getStartdatum());
+        project.setGeplantesEnddatum(updateProject.getGeplantesEnddatum());
+
+        Project updatedProject = projectRepository.save(project);
+        return mapToDto(project);
+    }
+
   private Project mapToEntity(CreateProjectDto dto) {
     Project project = new Project();
     project.setBezeichnung(dto.getBezeichnung());

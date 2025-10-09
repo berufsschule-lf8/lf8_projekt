@@ -6,6 +6,7 @@ import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
+import de.szut.lf8_starter.exceptionHandling.SkillsNotMatchingException;
 import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
 import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.repositories.ProjectRepository;
@@ -61,7 +62,7 @@ public class ProjectService {
         boolean hasRequiredSkills = employeeSkillIds.containsAll(project.getRequiredSkillIds());
         if (!hasRequiredSkills) {
           log.error("Employee {} does not have required Skills", employeeId);
-          throw new IllegalArgumentException("Employee " + employeeId + " does not have required Skills"); //ToDo: Richtige Exception
+          throw new SkillsNotMatchingException("Employee " + employeeId + " does not have required Skills");
         }
       }
 
@@ -116,6 +117,7 @@ public class ProjectService {
     project.setKommentar(dto.getKommentar());
     project.setStartdatum(dto.getStartdatum());
     project.setGeplantesEnddatum(dto.getGeplantesEnddatum());
+    project.setRequiredSkillIds(dto.getRequiredSkillIds());
     return project;
   }
 
@@ -130,6 +132,7 @@ public class ProjectService {
     dto.setStartdatum(project.getStartdatum());
     dto.setGeplantesEnddatum(project.getGeplantesEnddatum());
     dto.setTatsaechlichesEnddatum(project.getTatsaechlichesEnddatum());
+    dto.setRequiredSkillIds(project.getRequiredSkillIds());
     return dto;
   }
 }

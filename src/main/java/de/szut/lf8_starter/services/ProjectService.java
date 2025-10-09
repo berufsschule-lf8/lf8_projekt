@@ -50,19 +50,37 @@ public class ProjectService {
           log.error("Could not find employee with id {}", employeeId);
           return null;
       }
-      List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(employeeId, projectOptional.get().getStartdatum(), projectOptional.get().getGeplantesEnddatum());
-      if(!overlapping.isEmpty()) {
-          log.error("Employee {} is already assigned to project {}", employeeId, projectId);
-          return null;
+
+      Project project = projectOptional.get();
+
+      if (!project.getRequiredSkillIds().isEmpty()) {
+        List<Long> employeeSkillIds = employee.getSkillSet().stream()
+            .map(GetEmployeeDto.SkillSetDto::getId)
+            .collect(Collectors.toList());
+
+        boolean hasRequiredSkills = employeeSkillIds.containsAll(project.getRequiredSkillIds());
+        if (!hasRequiredSkills) {
+          log.error("Employee {} does not have required Skills", employeeId);
+          throw new IllegalArgumentException("Employee " + employeeId + " does not have required Skills"); //ToDo: Richtige Exception
+        }
       }
-      ProjectEmployee projectEmployee = new ProjectEmployee();
-      projectEmployee.setProject(projectOptional.get());
-      projectEmployee.setEmployeeId(employeeId);
-      projectEmployee.setStartDate(projectOptional.get().getStartdatum());
-      projectEmployee.setEndDate(projectOptional.get().getGeplantesEnddatum());
-      projectEmployeeRepository.save(projectEmployee);
-      log.info("Added employee {} to project {}", employeeId, projectId);
-      return mapToDto(projectOptional.get());
+
+    List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(
+        employeeId, project.getStartdatum(), project.getGeplantesEnddatum());
+    if (!overlapping.isEmpty()) {
+      log.error("Employee {} is already assigned to another project during this period", employeeId);
+      throw new IllegalStateException("Employee is already assigned to another project");
+    }
+
+    ProjectEmployee projectEmployee = new ProjectEmployee();
+    projectEmployee.setProject(project);
+    projectEmployee.setEmployeeId(employeeId);
+    projectEmployee.setStartDate(project.getStartdatum());
+    projectEmployee.setEndDate(project.getGeplantesEnddatum());
+    projectEmployeeRepository.save(projectEmployee);
+
+    log.info("Added employee {} to project {}", employeeId, projectId);
+    return mapToDto(project);
   }
 
   public void delete(long id) {

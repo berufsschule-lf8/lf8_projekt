@@ -1,12 +1,17 @@
 package de.szut.lf8_starter.entities;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 
 @Entity
@@ -41,4 +46,9 @@ public class Project {
 
   @Column(name = "tatsaechliches_enddatum")
   private LocalDate tatsaechlichesEnddatum;
+
+  @ElementCollection
+  @CollectionTable(name = "project_required_skills", joinColumns = @JoinColumn(name = "project_id"))
+  @Column(name = "skill_id")
+  private List<Long> requiredSkillIds = new ArrayList<>();
 }

@@ -20,4 +20,5 @@ public interface ProjectEmployeeRepository extends JpaRepository<ProjectEmployee
     );
     List<ProjectEmployee> findByProjectId(Long projectId);
 
+    List<ProjectEmployee> findByEmployeeId(Long employeeId);
 }

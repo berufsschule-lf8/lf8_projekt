@@ -86,6 +86,17 @@ public class ProjectController {
     return ResponseEntity.status(HttpStatus.OK).body(projectService.getProjectById(id));
   }
 
+  @Operation(summary = "Löscht einen Mitarbeiter eines Projekts")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Mitarbeiter wurde ohne Fehler aus dem Projekt gelöscht"),
+          @ApiResponse(responseCode = "404", description = "Mitarbeiter wurde nicht gefunden")
+  })
+  @DeleteMapping("/{projectId}/employees/{employeeId}")
+  @ResponseStatus(code=HttpStatus.NO_CONTENT)
+  public void deleteEmployeeFromProject(@PathVariable final long projectId, @PathVariable final long employeeId){
+    this.projectService.deleteEmployee(projectId, employeeId);
+  }
+  
   @Operation(summary = "Gibt alle Mitarbeiter eines Projekts zurück")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Die List aller Mitarbeiter des Projekts")

@@ -14,7 +14,3 @@ username = {{username}} &
 password = {{app_password}} &
 client_id = {{client_id}} &
 scope = openid
-
-###
-
-

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProjectEmployeeRepository extends JpaRepository<ProjectEmployee, Long> {
@@ -21,4 +22,7 @@ public interface ProjectEmployeeRepository extends JpaRepository<ProjectEmployee
     List<ProjectEmployee> findByProjectId(Long projectId);
 
     List<ProjectEmployee> findByEmployeeId(Long employeeId);
+
+    @Query("SELECT pe FROM ProjectEmployee pe WHERE pe.employeeId = :employeeId AND pe.project.id = :projectId")
+    Optional<ProjectEmployee> findByProjectIdAndEmployeeId(Long projectId, Long employeeId);
 }

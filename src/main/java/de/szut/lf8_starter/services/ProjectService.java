@@ -149,4 +149,15 @@ public class ProjectService {
     dto.setRequiredSkillIds(project.getRequiredSkillIds());
     return dto;
   }
+
+  public void deleteEmployee(long projectId, long employeeId) {
+    Optional<ProjectEmployee> projectEmployee =
+            projectEmployeeRepository.findByProjectIdAndEmployeeId(projectId, employeeId);
+
+    if (projectEmployee.isEmpty()) {
+      throw new ResourceNotFoundException("Employee with id " + employeeId
+              + " was not assigned to project " + projectId);
+    }
+    projectEmployeeRepository.delete(projectEmployee.get());
+  }
 }

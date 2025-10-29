@@ -12,6 +12,7 @@ import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
 import de.szut.lf8_starter.repositories.ProjectRepository;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -104,6 +105,21 @@ public class ProjectService {
       log.error("Project not found with id {}", id);
       throw new ResourceNotFoundException("There is no project with id: " + id);
     }
+  }
+
+  public List<GetEmployeeDto> getAllEmployeesInProject(Long projectId) {
+    Optional<Project> optionalProject = projectRepository.findById(projectId);
+    if (optionalProject.isEmpty()) {
+      log.error("Could not find project with id {}", projectId);
+      throw new ResourceNotFoundException("Project by id = " + projectId + " was not found.");
+    }
+
+    List<ProjectEmployee> projectEmployees = projectEmployeeRepository.findByProjectId(projectId);
+
+    return projectEmployees.stream()
+        .map(pe -> employeeServiceClient.getEmployeeById(pe.getEmployeeId()))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   private Project mapToEntity(CreateProjectDto dto) {

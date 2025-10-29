@@ -19,6 +19,7 @@ public interface ProjectEmployeeRepository extends JpaRepository<ProjectEmployee
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+    List<ProjectEmployee> findByProjectId(Long projectId);
 
     List<ProjectEmployee> findByEmployeeId(Long employeeId);
 

@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -97,4 +96,14 @@ public class ProjectController {
   public void deleteEmployeeFromProject(@PathVariable final long projectId, @PathVariable final long employeeId){
     this.projectService.deleteEmployee(projectId, employeeId);
   }
+  
+  @Operation(summary = "Gibt alle Mitarbeiter eines Projekts zurück")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Die List aller Mitarbeiter des Projekts")
+  })
+  @GetMapping(value = "/{id}/employees")
+  public ResponseEntity<List<GetEmployeeDto>> getAllEmployeesForProject(@PathVariable long id) {
+    return ResponseEntity.status(HttpStatus.OK).body(projectService.getAllEmployeesInProject(id));
+  }
+
 }

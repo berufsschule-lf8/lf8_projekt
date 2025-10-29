@@ -6,17 +6,16 @@ import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
-import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
 import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
+import de.szut.lf8_starter.exceptionHandling.SkillsNotMatchingException;
+import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -50,19 +49,37 @@ public class ProjectService {
           log.error("Could not find employee with id {}", employeeId);
           return null;
       }
-      List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(employeeId, projectOptional.get().getStartdatum(), projectOptional.get().getGeplantesEnddatum());
-      if(!overlapping.isEmpty()) {
-          log.error("Employee {} is already assigned to project {}", employeeId, projectId);
-          return null;
+
+      Project project = projectOptional.get();
+
+      if (!project.getRequiredSkillIds().isEmpty()) {
+        List<Long> employeeSkillIds = employee.getSkillSet().stream()
+            .map(GetEmployeeDto.SkillSetDto::getId)
+            .collect(Collectors.toList());
+
+        boolean hasRequiredSkills = new HashSet<>(employeeSkillIds).containsAll(project.getRequiredSkillIds());
+        if (!hasRequiredSkills) {
+          log.error("Employee {} does not have required Skills", employeeId);
+          throw new SkillsNotMatchingException("Employee " + employeeId + " does not have required Skills");
+        }
       }
-      ProjectEmployee projectEmployee = new ProjectEmployee();
-      projectEmployee.setProject(projectOptional.get());
-      projectEmployee.setEmployeeId(employeeId);
-      projectEmployee.setStartDate(projectOptional.get().getStartdatum());
-      projectEmployee.setEndDate(projectOptional.get().getGeplantesEnddatum());
-      projectEmployeeRepository.save(projectEmployee);
-      log.info("Added employee {} to project {}", employeeId, projectId);
-      return mapToDto(projectOptional.get());
+
+    List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(
+        employeeId, project.getStartdatum(), project.getGeplantesEnddatum());
+    if (!overlapping.isEmpty()) {
+      log.error("Employee {} is already assigned to another project during this period", employeeId);
+      throw new IllegalStateException("Employee is already assigned to another project");
+    }
+
+    ProjectEmployee projectEmployee = new ProjectEmployee();
+    projectEmployee.setProject(project);
+    projectEmployee.setEmployeeId(employeeId);
+    projectEmployee.setStartDate(project.getStartdatum());
+    projectEmployee.setEndDate(project.getGeplantesEnddatum());
+    projectEmployeeRepository.save(projectEmployee);
+
+    log.info("Added employee {} to project {}", employeeId, projectId);
+    return mapToDto(project);
   }
 
   public void delete(long id) {
@@ -98,6 +115,7 @@ public class ProjectService {
     project.setKommentar(dto.getKommentar());
     project.setStartdatum(dto.getStartdatum());
     project.setGeplantesEnddatum(dto.getGeplantesEnddatum());
+    project.setRequiredSkillIds(dto.getRequiredSkillIds());
     return project;
   }
 
@@ -112,6 +130,7 @@ public class ProjectService {
     dto.setStartdatum(project.getStartdatum());
     dto.setGeplantesEnddatum(project.getGeplantesEnddatum());
     dto.setTatsaechlichesEnddatum(project.getTatsaechlichesEnddatum());
+    dto.setRequiredSkillIds(project.getRequiredSkillIds());
     return dto;
   }
 }

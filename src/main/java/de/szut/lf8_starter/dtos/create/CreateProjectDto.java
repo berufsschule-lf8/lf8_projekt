@@ -5,6 +5,8 @@ import de.szut.lf8_starter.validation.ValidEmployee;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -30,5 +32,7 @@ public class CreateProjectDto {
   private LocalDate startdatum;
 
   private LocalDate geplantesEnddatum;
+
+  private List<Long> requiredSkillIds = new ArrayList<>();
 
 }

@@ -4,6 +4,7 @@ import de.szut.lf8_starter.client.EmployeeServiceClient;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
+import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
 import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
@@ -107,19 +108,45 @@ public class ProjectService {
     }
   }
 
-  public List<GetEmployeeDto> getAllEmployeesInProject(Long projectId) {
+  public GetProjectEmployeesDto getAllEmployeesInProject(Long projectId) {
     Optional<Project> optionalProject = projectRepository.findById(projectId);
     if (optionalProject.isEmpty()) {
       log.error("Could not find project with id {}", projectId);
       throw new ResourceNotFoundException("Project by id = " + projectId + " was not found.");
     }
 
+    Project project = optionalProject.get();
     List<ProjectEmployee> projectEmployees = projectEmployeeRepository.findByProjectId(projectId);
 
-    return projectEmployees.stream()
-        .map(pe -> employeeServiceClient.getEmployeeById(pe.getEmployeeId()))
+    GetProjectEmployeesDto response = new GetProjectEmployeesDto();
+    response.setProjectId(project.getId());
+    response.setProjectDescription(project.getBezeichnung());
+
+    List<GetProjectEmployeesDto.EmployeeWithSkillsDto> employeeDtos = projectEmployees.stream()
+        .map(pe -> {
+          GetEmployeeDto employee = employeeServiceClient.getEmployeeById(pe.getEmployeeId());
+          if (employee == null) return null;
+
+          GetProjectEmployeesDto.EmployeeWithSkillsDto empDto = new GetProjectEmployeesDto.EmployeeWithSkillsDto();
+          empDto.setEmployeeId(employee.getId());
+
+          List<GetProjectEmployeesDto.SkillDto> skills = employee.getSkillSet().stream()
+              .map(skill -> {
+                GetProjectEmployeesDto.SkillDto skillDto = new GetProjectEmployeesDto.SkillDto();
+                skillDto.setId(skill.getId());
+                skillDto.setName(skill.getName());
+                return skillDto;
+              })
+              .collect(Collectors.toList());
+
+          empDto.setSkills(skills);
+          return empDto;
+        })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+
+    response.setEmployees(employeeDtos);
+    return response;
   }
 
   private Project mapToEntity(CreateProjectDto dto) {

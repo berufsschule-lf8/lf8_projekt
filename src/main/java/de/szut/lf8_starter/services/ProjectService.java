@@ -6,18 +6,16 @@ import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
+import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.exceptionHandling.SkillsNotMatchingException;
 import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
-import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -59,7 +57,7 @@ public class ProjectService {
             .map(GetEmployeeDto.SkillSetDto::getId)
             .collect(Collectors.toList());
 
-        boolean hasRequiredSkills = employeeSkillIds.containsAll(project.getRequiredSkillIds());
+        boolean hasRequiredSkills = new HashSet<>(employeeSkillIds).containsAll(project.getRequiredSkillIds());
         if (!hasRequiredSkills) {
           log.error("Employee {} does not have required Skills", employeeId);
           throw new SkillsNotMatchingException("Employee " + employeeId + " does not have required Skills");

@@ -1,6 +1,7 @@
 package de.szut.lf8_starter.controller;
 
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
+import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,4 +87,14 @@ public class ProjectController {
     return ResponseEntity.status(HttpStatus.OK).body(projectService.getProjectById(id));
   }
 
+  @Operation(summary = "Löscht einen Mitarbeiter eines Projekts")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Mitarbeiter wurde ohne Fehler aus dem Projekt gelöscht"),
+          @ApiResponse(responseCode = "404", description = "Mitarbeiter wurde nicht gefunden")
+  })
+  @DeleteMapping("/{projectId}/employees/{employeeId}")
+  @ResponseStatus(code=HttpStatus.NO_CONTENT)
+  public void deleteEmployeeFromProject(@PathVariable final long projectId, @PathVariable final long employeeId){
+    this.projectService.deleteEmployee(projectId, employeeId);
+  }
 }

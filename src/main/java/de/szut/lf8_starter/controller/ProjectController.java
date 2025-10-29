@@ -3,6 +3,7 @@ package de.szut.lf8_starter.controller;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
+import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -102,7 +103,7 @@ public class ProjectController {
       @ApiResponse(responseCode = "200", description = "Die List aller Mitarbeiter des Projekts")
   })
   @GetMapping(value = "/{id}/employees")
-  public ResponseEntity<List<GetEmployeeDto>> getAllEmployeesForProject(@PathVariable long id) {
+  public ResponseEntity<GetProjectEmployeesDto> getAllEmployeesForProject(@PathVariable long id) {
     return ResponseEntity.status(HttpStatus.OK).body(projectService.getAllEmployeesInProject(id));
   }
 

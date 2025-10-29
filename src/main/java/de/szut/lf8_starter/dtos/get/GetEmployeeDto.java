@@ -1,5 +1,6 @@
 package de.szut.lf8_starter.dtos.get;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class GetEmployeeDto {
     @Data
     public static class SkillSetDto {
         private long id;
+        @JsonProperty("skill")
         private String name;
     }
 }

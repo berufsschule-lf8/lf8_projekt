@@ -25,7 +25,4 @@ public class ProjectEmployee {
 
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
-
-    @Column(nullable = true)
-    private String qualification;
 }

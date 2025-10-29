@@ -78,6 +78,7 @@ public class ProjectService {
     projectEmployee.setEmployeeId(employeeId);
     projectEmployee.setStartDate(project.getStartdatum());
     projectEmployee.setEndDate(project.getGeplantesEnddatum());
+
     projectEmployeeRepository.save(projectEmployee);
 
     log.info("Added employee {} to project {}", employeeId, projectId);

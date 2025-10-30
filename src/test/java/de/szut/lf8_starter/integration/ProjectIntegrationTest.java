@@ -160,7 +160,9 @@ class ProjectIntegrationTest {
 
     mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(0)));
+        .andExpect(jsonPath("$.projectId").value(savedProject.getId()))
+        .andExpect(jsonPath("$.projectDescription").value("Test Project"))
+        .andExpect(jsonPath("$.employees", hasSize(0)));
   }
 
   public static Project createTestProject(String bezeichnung) {

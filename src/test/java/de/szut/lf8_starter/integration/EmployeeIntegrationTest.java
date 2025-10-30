@@ -58,7 +58,6 @@ class EmployeeIntegrationTest {
     pe.setEmployeeId(1L);
     pe.setStartDate(LocalDate.now());
     pe.setEndDate(LocalDate.now().plusMonths(6));
-    pe.setQualification("Java Developer");
     projectEmployeeRepository.save(pe);
 
     mockMvc.perform(get("/api/v1/employees/1/projects"))

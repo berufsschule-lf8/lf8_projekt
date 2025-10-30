@@ -44,12 +44,12 @@ public class ProjectService {
       Optional<Project> projectOptional = projectRepository.findById(projectId);
       if (projectOptional.isEmpty()) {
           log.error("Could not find project with id {}", projectId);
-          return null;
+          throw new ResourceNotFoundException("Could not find project with id " + projectId);
       }
       GetEmployeeDto employee = employeeServiceClient.getEmployeeById(employeeId);
       if(employee == null) {
           log.error("Could not find employee with id {}", employeeId);
-          return null;
+          throw new ResourceNotFoundException("Could not find employee with id " + employeeId);
       }
 
       Project project = projectOptional.get();
@@ -181,7 +181,11 @@ public class ProjectService {
   public void deleteEmployee(long projectId, long employeeId) {
     Optional<ProjectEmployee> projectEmployee =
             projectEmployeeRepository.findByProjectIdAndEmployeeId(projectId, employeeId);
+    Optional<Project> project = projectRepository.findById(projectId);
 
+    if (project.isEmpty()) {
+      throw new ResourceNotFoundException("Project for ID: " + projectId + " does not exist");
+    }
     if (projectEmployee.isEmpty()) {
       throw new ResourceNotFoundException("Employee with id " + employeeId
               + " was not assigned to project " + projectId);

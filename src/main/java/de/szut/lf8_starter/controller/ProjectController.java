@@ -1,7 +1,6 @@
 package de.szut.lf8_starter.controller;
 
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
-import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.services.ProjectService;

@@ -5,5 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class SkillsNotMatchingException extends RuntimeException {
-  public SkillsNotMatchingException(String message) {super(message);}
+
+  public SkillsNotMatchingException(String message) {
+    super(message);
+  }
 }

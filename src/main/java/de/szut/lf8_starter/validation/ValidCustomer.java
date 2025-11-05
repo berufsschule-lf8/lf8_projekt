@@ -13,7 +13,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidCustomer {
+
   String message() default "Kunde existiert nicht im Customer-Service";
+
   Class<?>[] groups() default {};
+
   Class<? extends Payload>[] payload() default {};
 }

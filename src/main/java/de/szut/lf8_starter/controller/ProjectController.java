@@ -3,13 +3,11 @@ package de.szut.lf8_starter.controller;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
-import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.ServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -35,48 +34,46 @@ public class ProjectController {
   }
 
 
-
   @Operation(summary = "Erstellt ein neues Projekt")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Projekt erfolgreich erstellt"),
       @ApiResponse(responseCode = "400", description = "Ungültige Eingabedaten")
   })
   @PostMapping
-  public ResponseEntity<GetProjectDto> createProject(@Valid @RequestBody CreateProjectDto createProjectDto) {
+  public ResponseEntity<GetProjectDto> createProject(
+      @Valid @RequestBody CreateProjectDto createProjectDto) {
     GetProjectDto createProject = projectService.createProject(createProjectDto);
     return new ResponseEntity<>(createProject, HttpStatus.CREATED);
   }
 
 
-    @Operation(summary = "Fügt einen Mitarbeiter anhand der ID zu einem bestimmten Projekt hinzu.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Mitarbeiter wurde erfolgreich dem Projekt hinzugefügt."),
-            @ApiResponse(responseCode = "400", description = "Ungültige Eingabedaten!")
-    })
+  @Operation(summary = "Fügt einen Mitarbeiter anhand der ID zu einem bestimmten Projekt hinzu.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Mitarbeiter wurde erfolgreich dem Projekt hinzugefügt."),
+      @ApiResponse(responseCode = "400", description = "Ungültige Eingabedaten!")
+  })
   @PostMapping("/{projectId}/employees/{employeeId}")
-  public ResponseEntity<GetProjectDto> addEmployeeToProject(@PathVariable Long projectId, @PathVariable Long employeeId) {
-      GetProjectDto updatedProject = projectService.addEmployeeToProject(projectId, employeeId);
-      return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+  public ResponseEntity<GetProjectDto> addEmployeeToProject(@PathVariable Long projectId,
+      @PathVariable Long employeeId) {
+    GetProjectDto updatedProject = projectService.addEmployeeToProject(projectId, employeeId);
+    return new ResponseEntity<>(updatedProject, HttpStatus.OK);
   }
-  
+
   @Operation(summary = "Löschen von einem Projekt")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "204", description = "Projekt wurde ohne Fehler gelöscht"),
-          @ApiResponse(responseCode = "404", description = "Projekt wurde nicht gefunden")
+      @ApiResponse(responseCode = "204", description = "Projekt wurde ohne Fehler gelöscht"),
+      @ApiResponse(responseCode = "404", description = "Projekt wurde nicht gefunden")
   })
   @DeleteMapping("/{id}")
-  @ResponseStatus(code=HttpStatus.NO_CONTENT)
-  public void deleteProjectById(@PathVariable final Long id){
+  @ResponseStatus(code = HttpStatus.NO_CONTENT)
+  public void deleteProjectById(@PathVariable final Long id) {
     this.projectService.delete(id);
   }
 
   @PutMapping("{id}")
-  public ResponseEntity<GetProjectDto> updateProject(@PathVariable final Long id, @Valid @RequestBody final CreateProjectDto dto){
-    GetProjectDto updatedProject = new GetProjectDto();
-    updatedProject.setId(id);
-    updatedProject = this.projectService.update(id,dto);
-
-    return new ResponseEntity<GetProjectDto>(updatedProject,HttpStatus.OK);
+  public ResponseEntity<GetProjectDto> updateProject(@PathVariable final Long id,
+      @Valid @RequestBody final CreateProjectDto dto) {
+    return ResponseEntity.ok(projectService.update(id, dto));
   }
 
   @Operation(summary = "Gibt alle Projekte zurück")
@@ -99,15 +96,16 @@ public class ProjectController {
 
   @Operation(summary = "Löscht einen Mitarbeiter eines Projekts")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "204", description = "Mitarbeiter wurde ohne Fehler aus dem Projekt gelöscht"),
-          @ApiResponse(responseCode = "404", description = "Mitarbeiter wurde nicht gefunden")
+      @ApiResponse(responseCode = "204", description = "Mitarbeiter wurde ohne Fehler aus dem Projekt gelöscht"),
+      @ApiResponse(responseCode = "404", description = "Mitarbeiter wurde nicht gefunden")
   })
   @DeleteMapping("/{projectId}/employees/{employeeId}")
-  @ResponseStatus(code=HttpStatus.NO_CONTENT)
-  public void deleteEmployeeFromProject(@PathVariable final long projectId, @PathVariable final long employeeId){
+  @ResponseStatus(code = HttpStatus.NO_CONTENT)
+  public void deleteEmployeeFromProject(@PathVariable final long projectId,
+      @PathVariable final long employeeId) {
     this.projectService.deleteEmployee(projectId, employeeId);
   }
-  
+
   @Operation(summary = "Gibt alle Mitarbeiter eines Projekts zurück")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Die List aller Mitarbeiter des Projekts")

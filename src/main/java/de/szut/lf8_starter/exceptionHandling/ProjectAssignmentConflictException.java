@@ -5,7 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.CONFLICT)
 public class ProjectAssignmentConflictException extends RuntimeException {
-    public ProjectAssignmentConflictException(String message) {
-        super(message);
-    }
+
+  public ProjectAssignmentConflictException(String message) {
+    super(message);
+  }
 }

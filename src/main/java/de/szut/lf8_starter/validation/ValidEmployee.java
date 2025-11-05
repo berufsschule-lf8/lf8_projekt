@@ -13,8 +13,11 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidEmployee {
+
   String message() default "Mitarbeiter existiert nicht";
+
   Class<?>[] groups() default {};
+
   Class<? extends Payload>[] payload() default {};
 
 }

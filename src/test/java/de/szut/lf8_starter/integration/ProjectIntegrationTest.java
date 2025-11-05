@@ -179,15 +179,17 @@ class ProjectIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Project with id 1 was not found."));
     }
 
-    @Test
-    void testGetAllEmployeesInProjectNoEmployees() throws Exception {
-        Project project = createTestProject("Test Project");
-        Project savedProject = projectRepository.save(project);
+  @Test
+  void testGetAllEmployeesInProjectNoEmployees() throws Exception {
+    Project project = createTestProject("Test Project");
+    Project savedProject = projectRepository.save(project);
 
-        mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
+    mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.projectId").value(savedProject.getId()))
+        .andExpect(jsonPath("$.projectDescription").value("Test Project"))
+        .andExpect(jsonPath("$.employees", hasSize(0)));
+  }
 
   public static Project createTestProject(String bezeichnung) {
     Project project = new Project();
@@ -217,12 +219,14 @@ class ProjectIntegrationTest {
 
   @Test
   void testUpdateProject_Success() throws Exception {
+    when(employeeServiceClient.employeeExists(1L)).thenReturn(true);
+
     Project existingProject = createTestProject("Old Project Name");
     Project savedProject = projectRepository.save(existingProject);
     Long projectId = savedProject.getId();
 
     CreateProjectDto updateDto = new CreateProjectDto();
-    updateDto.setBezeichnung("Neww Updated Project Name");
+    updateDto.setBezeichnung("New Updated Project Name");
     updateDto.setVerantwortlicherMitarbeiterId(1L);
     updateDto.setKundenId(2L);
     updateDto.setKundenansprechpartner("Max Mustermann");
@@ -230,33 +234,38 @@ class ProjectIntegrationTest {
     updateDto.setStartdatum(LocalDate.now());
     updateDto.setGeplantesEnddatum(LocalDate.now().plusMonths(6));
 
-    String jsonBody = new ObjectMapper().writeValueAsString(updateDto);
+    String jsonBody = objectMapper.writeValueAsString(updateDto);
 
     mockMvc.perform(put("/api/v1/projects/{id}", projectId)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonBody))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.bezeichnung").value("Updated Project Name"))
-            .andExpect(jsonPath("$.verantwortlicherMitarbeiterId").value(1))
-            .andExpect(jsonPath("$.kundenId").value(2))
-            .andExpect(jsonPath("$.kundenansprechpartner").value("Customer Contact"))
-            .andExpect(jsonPath("$.kommentar").value("Updated Comment"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.bezeichnung").value("New Updated Project Name"))
+        .andExpect(jsonPath("$.verantwortlicherMitarbeiterId").value(1))
+        .andExpect(jsonPath("$.kundenId").value(2))
+        .andExpect(jsonPath("$.kundenansprechpartner").value("Max Mustermann"))
+        .andExpect(jsonPath("$.kommentar").value("Test Comment"));
   }
 
   @Test
   void testUpdateProject_NotFound() throws Exception {
+    when(employeeServiceClient.employeeExists(1L)).thenReturn(true);
 
     Long nonExistentProjectId = 999L;
     CreateProjectDto updateDto = new CreateProjectDto();
     updateDto.setBezeichnung("Test Name");
+    updateDto.setVerantwortlicherMitarbeiterId(1L);
+    updateDto.setKundenId(1L);
+    updateDto.setKundenansprechpartner("Test Contact");
+    updateDto.setStartdatum(LocalDate.now());
+    updateDto.setGeplantesEnddatum(LocalDate.now().plusMonths(6));
 
-    String jsonBody = new ObjectMapper().writeValueAsString(updateDto);
+    String jsonBody = objectMapper.writeValueAsString(updateDto);
 
-    // Calling PUT on wrong ID and expect 404
     mockMvc.perform(put("/api/v1/projects/{id}", nonExistentProjectId)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonBody))
-            .andExpect(status().isNotFound());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonBody))
+        .andExpect(status().isNotFound());
   }
 
 }

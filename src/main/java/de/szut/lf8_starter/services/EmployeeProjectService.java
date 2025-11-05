@@ -63,7 +63,6 @@ public class EmployeeProjectService {
 
           projectDto.setQualifications(matchingSkills);
 
-
           return projectDto;
         })
         .collect(Collectors.toList());

@@ -44,15 +44,22 @@ public class AuthService {
 
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
-    ResponseEntity<TokenResponse> response = restTemplate.postForEntity(authUrl, request, TokenResponse.class);
+    ResponseEntity<TokenResponse> response = restTemplate.postForEntity(authUrl, request,
+        TokenResponse.class);
 
     return response.getBody().getAccessToken();
   }
 
   private static class TokenResponse {
+
     private String access_token;
 
-    public String getAccessToken() { return access_token; }
-    public void setAccess_token(String access_token) { this.access_token = access_token; }
+    public String getAccessToken() {
+      return access_token;
+    }
+
+    public void setAccess_token(String access_token) {
+      this.access_token = access_token;
+    }
   }
 }

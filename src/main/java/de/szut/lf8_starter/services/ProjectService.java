@@ -7,6 +7,7 @@ import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
+import de.szut.lf8_starter.exceptionHandling.ProjectAssignmentConflictException;
 import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
 import de.szut.lf8_starter.exceptionHandling.SkillsNotMatchingException;
 import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
@@ -70,7 +71,7 @@ public class ProjectService {
         employeeId, project.getStartdatum(), project.getGeplantesEnddatum());
     if (!overlapping.isEmpty()) {
       log.error("Employee {} is already assigned to another project during this period", employeeId);
-      throw new IllegalStateException("Employee is already assigned to another project");
+      throw new ProjectAssignmentConflictException("Employee is already assigned to another project");
     }
 
     ProjectEmployee projectEmployee = new ProjectEmployee();
@@ -95,7 +96,7 @@ public class ProjectService {
   }
 
   public List<GetProjectDto> getAllProjects() {
-    return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+      return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
   }
 
   public GetProjectDto getProjectById(Long id) {
@@ -113,7 +114,7 @@ public class ProjectService {
     Optional<Project> optionalProject = projectRepository.findById(projectId);
     if (optionalProject.isEmpty()) {
       log.error("Could not find project with id {}", projectId);
-      throw new ResourceNotFoundException("Project by id = " + projectId + " was not found.");
+      throw new ResourceNotFoundException("Project with id " + projectId + " was not found.");
     }
 
     Project project = optionalProject.get();

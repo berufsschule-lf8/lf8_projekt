@@ -24,5 +24,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(SkillsNotMatchingException.class)
+    public ResponseEntity<ErrorDetails> handleSkillsMismatch(SkillsNotMatchingException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ProjectAssignmentConflictException.class)
+    public ResponseEntity<ErrorDetails> handleProjectAssignmentConflict(ProjectAssignmentConflictException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
 
 }

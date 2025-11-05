@@ -91,6 +91,13 @@ class ProjectIntegrationTest {
         .andExpect(jsonPath("$[0].bezeichnung").value("Project 1"))
         .andExpect(jsonPath("$[1].bezeichnung").value("Project 2"));
   }
+    @Test
+    void testGetAllProjectsNoProjects() throws Exception {
+        mockMvc.perform(get("/api/v1/projects"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
 
   @Test
   void testGetProjectById() throws Exception {
@@ -146,22 +153,41 @@ class ProjectIntegrationTest {
     mockMvc.perform(delete("/api/v1/projects/{id}", savedProject.getId()))
         .andExpect(status().isNoContent());
 
-    mockMvc.perform(get("/project/{id}", savedProject.getId()))
+    mockMvc.perform(get("/api/v1/project/{id}", savedProject.getId()))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void testGetAllEmployeesInProject() throws Exception {
-    Project project = createTestProject("Test Project");
-    Project savedProject = projectRepository.save(project);
-
     GetEmployeeDto employee = createMockEmployee(1L);
     when(employeeServiceClient.getEmployeeById(anyLong())).thenReturn(employee);
+
+    Project project = createTestProject("Test Project");
+    Project savedProject = projectRepository.save(project);
 
     mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(0)));
   }
+    @Test
+    void testGetAllEmployeesInProjectInvalidProject() throws Exception {
+        GetEmployeeDto employee = createMockEmployee(1L);
+        when(employeeServiceClient.getEmployeeById(anyLong())).thenReturn(employee);
+
+        mockMvc.perform(get("/api/v1/projects/{id}/employees", 1))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Project with id 1 was not found."));
+    }
+
+    @Test
+    void testGetAllEmployeesInProjectNoEmployees() throws Exception {
+        Project project = createTestProject("Test Project");
+        Project savedProject = projectRepository.save(project);
+
+        mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
 
   public static Project createTestProject(String bezeichnung) {
     Project project = new Project();

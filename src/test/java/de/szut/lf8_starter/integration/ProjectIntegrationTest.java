@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class ProjectIntegrationTest {
 
   @Autowired
@@ -165,7 +165,9 @@ class ProjectIntegrationTest {
 
     mockMvc.perform(get("/api/v1/projects/{id}/employees", savedProject.getId()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(0)));
+        .andExpect(jsonPath("$.projectId").value(savedProject.getId()))
+        .andExpect(jsonPath("$.projectDescription").value("Test Project"))
+        .andExpect(jsonPath("$.employees", hasSize(0)));
   }
     @Test
     void testGetAllEmployeesInProjectInvalidProject() throws Exception {

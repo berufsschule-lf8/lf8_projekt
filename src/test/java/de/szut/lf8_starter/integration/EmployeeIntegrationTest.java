@@ -28,7 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class EmployeeIntegrationTest {
 
   @Autowired
@@ -62,7 +62,6 @@ class EmployeeIntegrationTest {
     pe.setEmployeeId(1L);
     pe.setStartDate(LocalDate.now());
     pe.setEndDate(LocalDate.now().plusMonths(6));
-    pe.setQualification("Java Developer");
     projectEmployeeRepository.save(pe);
 
     mockMvc.perform(get("/api/v1/employees/1/projects"))

@@ -72,6 +72,17 @@ class EmployeeIntegrationTest {
         .andExpect(jsonPath("$.projects[0].projectDescription").value("Test Project"));
   }
 
+    @Test
+    void testGetAllProjectsByEmployeeIdNoProjects() throws Exception {
+        GetEmployeeDto employee = createMockEmployee(1L);
+        when(employeeServiceClient.getEmployeeById(1L)).thenReturn(employee);
+
+        mockMvc.perform(get("/api/v1/employees/1/projects"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value("Could not find projects for employee with id: 1"));
+    }
+
   // POSITIVFALL
   @Test
   void testDeleteEmployeeFromProject() throws Exception {

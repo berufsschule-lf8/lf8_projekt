@@ -62,5 +62,4 @@ public class EmployeeServiceClient {
           throw new RuntimeException("Fehler beim Überprüfen des Mitarbeiters: " + e.getMessage());
       }
   }
-
 }

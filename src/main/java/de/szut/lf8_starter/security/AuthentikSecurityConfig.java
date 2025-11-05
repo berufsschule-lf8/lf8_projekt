@@ -1,4 +1,6 @@
 package de.szut.lf8_starter.security;
+
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -14,52 +16,51 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true)
 @ConditionalOnProperty(value = "authentik.enabled", matchIfMissing = true)
 public class AuthentikSecurityConfig {
 
-    @Value("${authentik.jwk-set-uri}")
-    private String jwkSetUri;
+  @Value("${authentik.jwk-set-uri}")
+  private String jwkSetUri;
 
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    }
+  @Bean
+  public JwtDecoder jwtDecoder() {
+    return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors(Customizer.withDefaults())
+        .csrf(csrf -> csrf.disable())
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> {
 
-                        })
-                )
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/hello").authenticated()
-                        .requestMatchers("/hello/**").authenticated()
-                        .anyRequest().permitAll()
-                );
+            })
+        )
+        .authorizeHttpRequests(authz -> authz
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger/**")
+            .permitAll() // Swagger erlauben
+            .requestMatchers("/h2-console/**").permitAll() // H2 Console erlauben (nur für Tests)
+            .anyRequest().authenticated()
+        );
 
-        return http.build();
-    }
+    return http.build();
+  }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration cfg = new CorsConfiguration();
+    cfg.setAllowedOriginPatterns(List.of("*"));
+    cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
-        return source;
-    }
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", cfg);
+    return source;
+  }
 
 
 }

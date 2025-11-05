@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class ValidCustomerValidator implements ConstraintValidator<ValidCustomer, Long> {
+
   @Override
   public void initialize(ValidCustomer constraintAnnotation) {
   }

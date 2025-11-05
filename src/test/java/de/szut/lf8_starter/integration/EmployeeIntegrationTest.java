@@ -72,6 +72,7 @@ class EmployeeIntegrationTest {
         .andExpect(jsonPath("$.projects[0].projectDescription").value("Test Project"));
   }
 
+  // POSITIVFALL
   @Test
   void testDeleteEmployeeFromProject() throws Exception {
 
@@ -104,5 +105,33 @@ class EmployeeIntegrationTest {
     org.assertj.core.api.Assertions.assertThat(employeeAssignments)
             .as("Employee should have no remaining project assignments")
             .isEmpty();
+  }
+
+  // NEGATIVFALL 1
+  @Test
+  void testDeleteEmployeeFromProject_ProjectNotFound() throws Exception {
+
+    GetEmployeeDto mockEmployee = createMockEmployee(1L);
+    when(employeeServiceClient.getEmployeeById(1L)).thenReturn(mockEmployee);
+
+    // Deleting from a project that does not exist
+    mockMvc.perform(delete("/api/v1/projects/{projectId}/employees/{employeeId}", 999L, 1L))
+            .andExpect(status().isNotFound());
+  }
+
+  // NEGATIVFALL 2
+  @Test
+  void testDeleteEmployeeFromProject_EmployeeNotInProject() throws Exception {
+    GetEmployeeDto mockEmployee = createMockEmployee(1L);
+    when(employeeServiceClient.getEmployeeById(1L)).thenReturn(mockEmployee);
+
+    // Creating a project but not assigning the employee
+    Project testProject = createTestProject("Unassigned Project");
+    Project savedProject = projectRepository.save(testProject);
+    Long projectId = savedProject.getId();
+
+    // Attempt of deleting an employee that is unassigned to the project
+    mockMvc.perform(delete("/api/v1/projects/{projectId}/employees/{employeeId}", projectId, 1L))
+            .andExpect(status().isNotFound());
   }
 }

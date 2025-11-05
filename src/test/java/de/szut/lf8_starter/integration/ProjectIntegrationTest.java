@@ -3,9 +3,7 @@ package de.szut.lf8_starter.integration;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -214,4 +212,49 @@ class ProjectIntegrationTest {
 
     return employee;
   }
+
+  @Test
+  void testUpdateProject_Success() throws Exception {
+    Project existingProject = createTestProject("Old Project Name");
+    Project savedProject = projectRepository.save(existingProject);
+    Long projectId = savedProject.getId();
+
+    CreateProjectDto updateDto = new CreateProjectDto();
+    updateDto.setBezeichnung("Neww Updated Project Name");
+    updateDto.setVerantwortlicherMitarbeiterId(1L);
+    updateDto.setKundenId(2L);
+    updateDto.setKundenansprechpartner("Max Mustermann");
+    updateDto.setKommentar("Test Comment");
+    updateDto.setStartdatum(LocalDate.now());
+    updateDto.setGeplantesEnddatum(LocalDate.now().plusMonths(6));
+
+    String jsonBody = new ObjectMapper().writeValueAsString(updateDto);
+
+    mockMvc.perform(put("/api/v1/projects/{id}", projectId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonBody))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.bezeichnung").value("Updated Project Name"))
+            .andExpect(jsonPath("$.verantwortlicherMitarbeiterId").value(1))
+            .andExpect(jsonPath("$.kundenId").value(2))
+            .andExpect(jsonPath("$.kundenansprechpartner").value("Customer Contact"))
+            .andExpect(jsonPath("$.kommentar").value("Updated Comment"));
+  }
+
+  @Test
+  void testUpdateProject_NotFound() throws Exception {
+
+    Long nonExistentProjectId = 999L;
+    CreateProjectDto updateDto = new CreateProjectDto();
+    updateDto.setBezeichnung("Test Name");
+
+    String jsonBody = new ObjectMapper().writeValueAsString(updateDto);
+
+    // Calling PUT on wrong ID and expect 404
+    mockMvc.perform(put("/api/v1/projects/{id}", nonExistentProjectId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonBody))
+            .andExpect(status().isNotFound());
+  }
+
 }

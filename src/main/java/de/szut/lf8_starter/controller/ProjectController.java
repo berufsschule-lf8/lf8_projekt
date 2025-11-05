@@ -2,6 +2,7 @@ package de.szut.lf8_starter.controller;
 
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
+import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +14,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,6 +59,11 @@ public class ProjectController {
       return new ResponseEntity<>(updatedProject, HttpStatus.OK);
   }
   
+  @Operation(summary = "Löschen von einem Projekt")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Projekt wurde ohne Fehler gelöscht"),
+          @ApiResponse(responseCode = "404", description = "Projekt wurde nicht gefunden")
+  })
   @DeleteMapping("/{id}")
   @ResponseStatus(code=HttpStatus.NO_CONTENT)
   public void deleteProjectById(@PathVariable final Long id){
@@ -90,6 +95,26 @@ public class ProjectController {
   @GetMapping(value = "/{id}")
   public ResponseEntity<GetProjectDto> getProjectById(@PathVariable long id) {
     return ResponseEntity.status(HttpStatus.OK).body(projectService.getProjectById(id));
+  }
+
+  @Operation(summary = "Löscht einen Mitarbeiter eines Projekts")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Mitarbeiter wurde ohne Fehler aus dem Projekt gelöscht"),
+          @ApiResponse(responseCode = "404", description = "Mitarbeiter wurde nicht gefunden")
+  })
+  @DeleteMapping("/{projectId}/employees/{employeeId}")
+  @ResponseStatus(code=HttpStatus.NO_CONTENT)
+  public void deleteEmployeeFromProject(@PathVariable final long projectId, @PathVariable final long employeeId){
+    this.projectService.deleteEmployee(projectId, employeeId);
+  }
+  
+  @Operation(summary = "Gibt alle Mitarbeiter eines Projekts zurück")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Die List aller Mitarbeiter des Projekts")
+  })
+  @GetMapping(value = "/{id}/employees")
+  public ResponseEntity<GetProjectEmployeesDto> getAllEmployeesForProject(@PathVariable long id) {
+    return ResponseEntity.status(HttpStatus.OK).body(projectService.getAllEmployeesInProject(id));
   }
 
 }

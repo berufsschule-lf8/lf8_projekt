@@ -4,19 +4,21 @@ import de.szut.lf8_starter.client.EmployeeServiceClient;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
+import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
 import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.entities.ProjectEmployee;
-import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
+import de.szut.lf8_starter.exceptionHandling.ProjectAssignmentConflictException;
 import de.szut.lf8_starter.exceptionHandling.ResourceNotFoundException;
+import de.szut.lf8_starter.exceptionHandling.SkillsNotMatchingException;
+import de.szut.lf8_starter.repositories.ProjectEmployeeRepository;
 import de.szut.lf8_starter.repositories.ProjectRepository;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -43,26 +45,45 @@ public class ProjectService {
       Optional<Project> projectOptional = projectRepository.findById(projectId);
       if (projectOptional.isEmpty()) {
           log.error("Could not find project with id {}", projectId);
-          return null;
+          throw new ResourceNotFoundException("Could not find project with id " + projectId);
       }
       GetEmployeeDto employee = employeeServiceClient.getEmployeeById(employeeId);
       if(employee == null) {
           log.error("Could not find employee with id {}", employeeId);
-          return null;
+          throw new ResourceNotFoundException("Could not find employee with id " + employeeId);
       }
-      List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(employeeId, projectOptional.get().getStartdatum(), projectOptional.get().getGeplantesEnddatum());
-      if(!overlapping.isEmpty()) {
-          log.error("Employee {} is already assigned to project {}", employeeId, projectId);
-          return null;
+
+      Project project = projectOptional.get();
+
+      if (!project.getRequiredSkillIds().isEmpty()) {
+        List<Long> employeeSkillIds = employee.getSkillSet().stream()
+            .map(GetEmployeeDto.SkillSetDto::getId)
+            .collect(Collectors.toList());
+
+        boolean hasRequiredSkills = new HashSet<>(employeeSkillIds).containsAll(project.getRequiredSkillIds());
+        if (!hasRequiredSkills) {
+          log.error("Employee {} does not have required Skills", employeeId);
+          throw new SkillsNotMatchingException("Employee " + employeeId + " does not have required Skills");
+        }
       }
-      ProjectEmployee projectEmployee = new ProjectEmployee();
-      projectEmployee.setProject(projectOptional.get());
-      projectEmployee.setEmployeeId(employeeId);
-      projectEmployee.setStartDate(projectOptional.get().getStartdatum());
-      projectEmployee.setEndDate(projectOptional.get().getGeplantesEnddatum());
-      projectEmployeeRepository.save(projectEmployee);
-      log.info("Added employee {} to project {}", employeeId, projectId);
-      return mapToDto(projectOptional.get());
+
+    List<ProjectEmployee> overlapping = projectEmployeeRepository.findOverlappingAssignments(
+        employeeId, project.getStartdatum(), project.getGeplantesEnddatum());
+    if (!overlapping.isEmpty()) {
+      log.error("Employee {} is already assigned to another project during this period", employeeId);
+      throw new ProjectAssignmentConflictException("Employee is already assigned to another project");
+    }
+
+    ProjectEmployee projectEmployee = new ProjectEmployee();
+    projectEmployee.setProject(project);
+    projectEmployee.setEmployeeId(employeeId);
+    projectEmployee.setStartDate(project.getStartdatum());
+    projectEmployee.setEndDate(project.getGeplantesEnddatum());
+
+    projectEmployeeRepository.save(projectEmployee);
+
+    log.info("Added employee {} to project {}", employeeId, projectId);
+    return mapToDto(project);
   }
 
   public void delete(long id) {
@@ -75,7 +96,7 @@ public class ProjectService {
   }
 
   public List<GetProjectDto> getAllProjects() {
-    return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+      return projectRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
   }
 
   public GetProjectDto getProjectById(Long id) {
@@ -87,6 +108,47 @@ public class ProjectService {
       log.error("Project not found with id {}", id);
       throw new ResourceNotFoundException("There is no project with id: " + id);
     }
+  }
+
+  public GetProjectEmployeesDto getAllEmployeesInProject(Long projectId) {
+    Optional<Project> optionalProject = projectRepository.findById(projectId);
+    if (optionalProject.isEmpty()) {
+      log.error("Could not find project with id {}", projectId);
+      throw new ResourceNotFoundException("Project with id " + projectId + " was not found.");
+    }
+
+    Project project = optionalProject.get();
+    List<ProjectEmployee> projectEmployees = projectEmployeeRepository.findByProjectId(projectId);
+
+    GetProjectEmployeesDto response = new GetProjectEmployeesDto();
+    response.setProjectId(project.getId());
+    response.setProjectDescription(project.getBezeichnung());
+
+    List<GetProjectEmployeesDto.EmployeeWithSkillsDto> employeeDtos = projectEmployees.stream()
+        .map(pe -> {
+          GetEmployeeDto employee = employeeServiceClient.getEmployeeById(pe.getEmployeeId());
+          if (employee == null) return null;
+
+          GetProjectEmployeesDto.EmployeeWithSkillsDto empDto = new GetProjectEmployeesDto.EmployeeWithSkillsDto();
+          empDto.setEmployeeId(employee.getId());
+
+          List<GetProjectEmployeesDto.SkillDto> skills = employee.getSkillSet().stream()
+              .map(skill -> {
+                GetProjectEmployeesDto.SkillDto skillDto = new GetProjectEmployeesDto.SkillDto();
+                skillDto.setId(skill.getId());
+                skillDto.setName(skill.getName());
+                return skillDto;
+              })
+              .collect(Collectors.toList());
+
+          empDto.setSkills(skills);
+          return empDto;
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+
+    response.setEmployees(employeeDtos);
+    return response;
   }
 
     public GetProjectDto update(Long id, CreateProjectDto updateProject) {
@@ -118,6 +180,7 @@ public class ProjectService {
     project.setKommentar(dto.getKommentar());
     project.setStartdatum(dto.getStartdatum());
     project.setGeplantesEnddatum(dto.getGeplantesEnddatum());
+    project.setRequiredSkillIds(dto.getRequiredSkillIds());
     return project;
   }
 
@@ -132,6 +195,22 @@ public class ProjectService {
     dto.setStartdatum(project.getStartdatum());
     dto.setGeplantesEnddatum(project.getGeplantesEnddatum());
     dto.setTatsaechlichesEnddatum(project.getTatsaechlichesEnddatum());
+    dto.setRequiredSkillIds(project.getRequiredSkillIds());
     return dto;
+  }
+
+  public void deleteEmployee(long projectId, long employeeId) {
+    Optional<ProjectEmployee> projectEmployee =
+            projectEmployeeRepository.findByProjectIdAndEmployeeId(projectId, employeeId);
+    Optional<Project> project = projectRepository.findById(projectId);
+
+    if (project.isEmpty()) {
+      throw new ResourceNotFoundException("Project for ID: " + projectId + " does not exist");
+    }
+    if (projectEmployee.isEmpty()) {
+      throw new ResourceNotFoundException("Employee with id " + employeeId
+              + " was not assigned to project " + projectId);
+    }
+    projectEmployeeRepository.delete(projectEmployee.get());
   }
 }

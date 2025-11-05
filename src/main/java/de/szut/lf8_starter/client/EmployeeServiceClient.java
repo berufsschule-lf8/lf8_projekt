@@ -1,5 +1,6 @@
 package de.szut.lf8_starter.client;
 
+import de.szut.lf8_starter.dtos.get.EmployeeProjectsDto;
 import de.szut.lf8_starter.dtos.get.GetEmployeeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,5 +63,4 @@ public class EmployeeServiceClient {
           throw new RuntimeException("Fehler beim Überprüfen des Mitarbeiters: " + e.getMessage());
       }
   }
-
 }

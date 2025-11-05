@@ -41,9 +41,9 @@ public class AuthentikSecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/hello").authenticated()
-                        .requestMatchers("/hello/**").authenticated()
-                        .anyRequest().permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger/**").permitAll() // Swagger erlauben
+                    .requestMatchers("/h2-console/**").permitAll() // H2 Console erlauben (nur für Tests)
+                    .anyRequest().authenticated()
                 );
 
         return http.build();

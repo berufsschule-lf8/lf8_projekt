@@ -3,11 +3,13 @@ package de.szut.lf8_starter.controller;
 import de.szut.lf8_starter.dtos.create.CreateProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectDto;
 import de.szut.lf8_starter.dtos.get.GetProjectEmployeesDto;
+import de.szut.lf8_starter.entities.Project;
 import de.szut.lf8_starter.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.ServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -66,6 +68,15 @@ public class ProjectController {
   @ResponseStatus(code=HttpStatus.NO_CONTENT)
   public void deleteProjectById(@PathVariable final Long id){
     this.projectService.delete(id);
+  }
+
+  @PutMapping("{id}")
+  public ResponseEntity<GetProjectDto> updateProject(@PathVariable final Long id, @Valid @RequestBody final CreateProjectDto dto){
+    GetProjectDto updatedProject = new GetProjectDto();
+    updatedProject.setId(id);
+    updatedProject = this.projectService.update(id,dto);
+
+    return new ResponseEntity<GetProjectDto>(updatedProject,HttpStatus.OK);
   }
 
   @Operation(summary = "Gibt alle Projekte zurück")
